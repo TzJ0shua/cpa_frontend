@@ -11,6 +11,7 @@ import type {
   Step,
   SurveyData,
 } from '../../lib/survey-types'
+import { buildSurveyApiPayload } from '../../lib/survey-payload'
 import { submitSurvey } from '../../services/survey-api'
 import { ConfirmationStep } from './steps/ConfirmationStep'
 import { CourseStep } from './steps/CourseStep'
@@ -101,7 +102,7 @@ export function SurveyForm() {
     const nextConfirmationCode = generateConfirmationCode()
     setIsSubmitting(true)
     const payload = buildSurveyData(nextConfirmationCode)
-    if (payload) await submitSurvey(payload)
+    if (payload) await submitSurvey(buildSurveyApiPayload(payload))
     setConfirmationCode(nextConfirmationCode)
     setIsSubmitting(false)
     setCurrentStep('confirmation')

@@ -47,4 +47,34 @@ export interface SurveyData {
   submittedAt: string
 }
 
+export interface SurveyApiAnswer {
+  questionId: QuestionId
+  questionText: string
+  score: number
+  scoreLabel: string
+}
+
+export interface SurveyApiSubject {
+  subjectId: string
+  subjectName: string
+  teacherName: string
+  answers: SurveyApiAnswer[]
+  comment: string
+}
+
+export interface SurveyApiPayload {
+  schemaVersion: '2026-CPA-v1'
+  confirmationCode: string
+  submittedAt: string
+  respondent: {
+    email: string
+    type: ParticipantType
+  }
+  course: {
+    id: string
+    name: string
+  }
+  subjects: SurveyApiSubject[]
+}
+
 export type Step = 'participant' | 'course' | 'subjects' | 'questionnaire' | 'confirmation'
