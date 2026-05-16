@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  cursos,
   defaultRespostas,
 } from '../../lib/survey-data'
 import type {
@@ -12,6 +11,7 @@ import type {
   SurveyData,
 } from '../../lib/survey-types'
 import { buildSurveyApiPayload } from '../../lib/survey-payload'
+import { fetchFormCourses } from '../../services/form-data-api'
 import { submitSurvey, type SubmitSurveyResult } from '../../services/survey-api'
 import { ConfirmationStep } from './steps/ConfirmationStep'
 import { CourseStep } from './steps/CourseStep'
@@ -42,6 +42,9 @@ export function SurveyForm() {
   const [cpf, setCpf] = useState('')
   const [matricula, setMatricula] = useState('')
   const [participantType, setParticipantType] = useState<ParticipantType | null>(null)
+  const [cursos, setCursos] = useState<Curso[]>([])
+  const [isLoadingFormData, setIsLoadingFormData] = useState(false)
+  const [formDataError, setFormDataError] = useState('')
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([])
   const [currentQuestionnaireIndex, setCurrentQuestionnaireIndex] = useState(0)
@@ -53,7 +56,7 @@ export function SurveyForm() {
 
   const selectedCourse = useMemo(
     () => cursos.find((curso) => curso.id === selectedCourseId) ?? null,
-    [selectedCourseId],
+    [cursos, selectedCourseId],
   )
 
   const selectedMaterias = useMemo(
@@ -62,6 +65,30 @@ export function SurveyForm() {
   )
 
   const currentMateria = selectedMaterias[currentQuestionnaireIndex] ?? null
+
+  const loadFormData = useCallback(async () => {
+    setIsLoadingFormData(true)
+    setFormDataError('')
+
+    try {
+      const nextCursos = await fetchFormCourses()
+      setCursos(nextCursos)
+      setSelectedCourseId((currentCourseId) =>
+        nextCursos.some((curso) => curso.id === currentCourseId) ? currentCourseId : null,
+      )
+    } catch (error) {
+      setCursos([])
+      setSelectedCourseId(null)
+      setSelectedSubjectIds([])
+      setFormDataError(error instanceof Error ? error.message : 'Não foi possível carregar cursos e disciplinas.')
+    } finally {
+      setIsLoadingFormData(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadFormData()
+  }, [loadFormData])
 
   const handleCourseSelect = useCallback((courseId: Curso['id']) => {
     setSelectedCourseId(courseId)
@@ -177,8 +204,12 @@ export function SurveyForm() {
 
         {currentStep === 'course' ? (
           <CourseStep
+            cursos={cursos}
             selectedCourseId={selectedCourseId}
             onCourseSelect={handleCourseSelect}
+            isLoading={isLoadingFormData}
+            error={formDataError}
+            onRetry={() => void loadFormData()}
             onNext={() => setCurrentStep('subjects')}
             onBack={() => setCurrentStep('participant')}
           />
