@@ -12,7 +12,7 @@ import type {
   SurveyData,
 } from '../../lib/survey-types'
 import { buildSurveyApiPayload } from '../../lib/survey-payload'
-import { submitSurvey } from '../../services/survey-api'
+import { submitSurvey, type SubmitSurveyResult } from '../../services/survey-api'
 import { ConfirmationStep } from './steps/ConfirmationStep'
 import { CourseStep } from './steps/CourseStep'
 import { ParticipantStep } from './steps/ParticipantStep'
@@ -48,6 +48,7 @@ export function SurveyForm() {
   const [respostasMap, setRespostasMap] = useState<Record<string, Respostas>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [submitResult, setSubmitResult] = useState<SubmitSurveyResult | null>(null)
   const [confirmationCode, setConfirmationCode] = useState('')
 
   const selectedCourse = useMemo(
@@ -67,10 +68,12 @@ export function SurveyForm() {
     setSelectedSubjectIds([])
     setRespostasMap({})
     setCurrentQuestionnaireIndex(0)
+    setSubmitResult(null)
   }, [])
 
   const handleSubjectToggle = useCallback((subjectId: string) => {
     setSubmitError('')
+    setSubmitResult(null)
     setSelectedSubjectIds((previous) =>
       previous.includes(subjectId)
         ? previous.filter((id) => id !== subjectId)
@@ -106,19 +109,34 @@ export function SurveyForm() {
     const nextConfirmationCode = generateConfirmationCode()
     setIsSubmitting(true)
     setSubmitError('')
+    setSubmitResult(null)
+
     const payload = buildSurveyData(nextConfirmationCode)
     if (!payload) {
-      setSubmitError('Não foi possível montar os dados da pesquisa.')
+      setSubmitResult({
+        ok: false,
+        status: 0,
+        message: 'Não foi possível montar os dados da pesquisa.',
+      })
+      setConfirmationCode(nextConfirmationCode)
+      setCurrentStep('confirmation')
       setIsSubmitting(false)
       return
     }
 
     try {
-      await submitSurvey(buildSurveyApiPayload(payload))
+      const result = await submitSurvey(buildSurveyApiPayload(payload))
+      setSubmitResult(result)
       setConfirmationCode(nextConfirmationCode)
       setCurrentStep('confirmation')
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Não foi possível enviar a avaliação.')
+      setSubmitResult({
+        ok: false,
+        status: 0,
+        message: error instanceof Error ? error.message : 'Não foi possível enviar a avaliação.',
+      })
+      setConfirmationCode(nextConfirmationCode)
+      setCurrentStep('confirmation')
     } finally {
       setIsSubmitting(false)
     }
@@ -134,6 +152,7 @@ export function SurveyForm() {
     setCurrentQuestionnaireIndex(0)
     setRespostasMap({})
     setSubmitError('')
+    setSubmitResult(null)
     setConfirmationCode('')
   }, [])
 
@@ -184,6 +203,7 @@ export function SurveyForm() {
             respostas={respostasMap[currentMateria.id] ?? defaultRespostas}
             onRespostasChange={(respostas) => {
               setSubmitError('')
+              setSubmitResult(null)
               setRespostasMap((previous) => ({ ...previous, [currentMateria.id]: respostas }))
             }}
             currentIndex={currentQuestionnaireIndex}
@@ -210,6 +230,7 @@ export function SurveyForm() {
             cpf={cpf}
             matricula={matricula}
             confirmationCode={confirmationCode}
+            submitResult={submitResult}
             totalMaterias={selectedMaterias.length}
             onNewResponse={resetForm}
           />
