@@ -39,7 +39,8 @@ function generateConfirmationCode() {
 
 export function SurveyForm() {
   const [currentStep, setCurrentStep] = useState<Step>('participant')
-  const [email, setEmail] = useState('')
+  const [cpf, setCpf] = useState('')
+  const [matricula, setMatricula] = useState('')
   const [participantType, setParticipantType] = useState<ParticipantType | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([])
@@ -86,7 +87,8 @@ export function SurveyForm() {
     }))
 
     return {
-      email,
+      cpf,
+      matricula,
       participante: participantType,
       curso: {
         idCurso: selectedCourse.id,
@@ -96,7 +98,7 @@ export function SurveyForm() {
       confirmationCode: code,
       submittedAt: new Date().toISOString(),
     }
-  }, [email, participantType, respostasMap, selectedCourse, selectedMaterias])
+  }, [cpf, matricula, participantType, respostasMap, selectedCourse, selectedMaterias])
 
   const handleSubmit = useCallback(async () => {
     const nextConfirmationCode = generateConfirmationCode()
@@ -110,7 +112,8 @@ export function SurveyForm() {
 
   const resetForm = useCallback(() => {
     setCurrentStep('participant')
-    setEmail('')
+    setCpf('')
+    setMatricula('')
     setParticipantType(null)
     setSelectedCourseId(null)
     setSelectedSubjectIds([])
@@ -128,9 +131,11 @@ export function SurveyForm() {
       <main className="grid flex-1 place-items-center px-0 py-8">
         {currentStep === 'participant' ? (
           <ParticipantStep
-            email={email}
+            cpf={cpf}
+            matricula={matricula}
             participantType={participantType}
-            onEmailChange={setEmail}
+            onCpfChange={setCpf}
+            onMatriculaChange={setMatricula}
             onParticipantTypeChange={setParticipantType}
             onNext={() => setCurrentStep('course')}
           />
@@ -185,7 +190,8 @@ export function SurveyForm() {
 
         {currentStep === 'confirmation' ? (
           <ConfirmationStep
-            email={email}
+            cpf={cpf}
+            matricula={matricula}
             confirmationCode={confirmationCode}
             totalMaterias={selectedMaterias.length}
             onNewResponse={resetForm}

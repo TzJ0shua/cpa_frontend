@@ -36,7 +36,8 @@ export interface MateriaResposta {
 }
 
 export interface SurveyData {
-  email: string
+  cpf: string
+  matricula: string
   participante: ParticipantType
   curso: {
     idCurso: string
@@ -67,7 +68,8 @@ export interface SurveyApiPayload {
   confirmationCode: string
   submittedAt: string
   respondent: {
-    email: string
+    cpf: string
+    matricula: string
     type: ParticipantType
   }
   course: {

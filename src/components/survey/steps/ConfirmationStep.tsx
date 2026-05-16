@@ -2,14 +2,16 @@ import { Button } from '../ui/Button'
 import { IconBadge } from '../ui/IconBadge'
 
 interface ConfirmationStepProps {
-  email: string
+  cpf: string
+  matricula: string
   confirmationCode: string
   totalMaterias: number
   onNewResponse: () => void
 }
 
 export function ConfirmationStep({
-  email,
+  cpf,
+  matricula,
   confirmationCode,
   totalMaterias,
   onNewResponse,
@@ -30,7 +32,8 @@ export function ConfirmationStep({
           <p>
             <strong className="text-slate-950">Código de Confirmação</strong>
             <br />
-            A confirmação será enviada para <strong className="text-slate-950">{email}</strong> futuramente.
+            Participação identificada por CPF <strong className="text-slate-950">{cpf}</strong> e matrícula{' '}
+            <strong className="text-slate-950">{matricula}</strong>.
           </p>
         </div>
         <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">

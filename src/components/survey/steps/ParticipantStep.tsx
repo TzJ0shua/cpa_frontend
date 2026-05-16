@@ -5,9 +5,11 @@ import { Button } from '../ui/Button'
 import { IconBadge } from '../ui/IconBadge'
 
 interface ParticipantStepProps {
-  email: string
+  cpf: string
+  matricula: string
   participantType: ParticipantType | null
-  onEmailChange: (email: string) => void
+  onCpfChange: (cpf: string) => void
+  onMatriculaChange: (matricula: string) => void
   onParticipantTypeChange: (participantType: ParticipantType) => void
   onNext: () => void
 }
@@ -38,32 +40,57 @@ function AnonymityBadge() {
   )
 }
 
+const onlyDigits = (value: string) => value.replace(/\D/g, '')
+
+const formatCpf = (value: string) => {
+  const digits = onlyDigits(value).slice(0, 11)
+
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+}
+
 export function ParticipantStep({
-  email,
+  cpf,
+  matricula,
   participantType,
-  onEmailChange,
+  onCpfChange,
+  onMatriculaChange,
   onParticipantTypeChange,
   onNext,
 }: ParticipantStepProps) {
-  const [emailError, setEmailError] = useState('')
+  const [cpfError, setCpfError] = useState('')
+  const [matriculaError, setMatriculaError] = useState('')
   const [participantError, setParticipantError] = useState('')
   const [touched, setTouched] = useState(false)
 
-  const validateEmail = (value: string) => {
-    if (!value.trim()) return 'O e-mail é obrigatório'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Digite um e-mail válido'
+  const validateCpf = (value: string) => {
+    const digits = onlyDigits(value)
+    if (!digits) return 'O CPF é obrigatório'
+    if (digits.length !== 11) return 'Digite um CPF com 11 dígitos'
+    return ''
+  }
+
+  const validateMatricula = (value: string) => {
+    const digits = onlyDigits(value)
+    if (!digits) return 'A matrícula é obrigatória'
+    if (digits.length !== 10) return 'Digite uma matrícula com 10 dígitos'
     return ''
   }
 
   const validateForm = () => {
-    const nextEmailError = validateEmail(email)
+    const nextCpfError = validateCpf(cpf)
+    const nextMatriculaError = validateMatricula(matricula)
     const nextParticipantError = participantType ? '' : 'Selecione o tipo de participante'
 
-    setEmailError(nextEmailError)
+    setCpfError(nextCpfError)
+    setMatriculaError(nextMatriculaError)
     setParticipantError(nextParticipantError)
     setTouched(true)
 
-    return !nextEmailError && !nextParticipantError
+    return !nextCpfError && !nextMatriculaError && !nextParticipantError
   }
 
   const handleSubmit = (event: FormEvent) => {
@@ -71,9 +98,16 @@ export function ParticipantStep({
     if (validateForm()) onNext()
   }
 
-  const handleEmailChange = (value: string) => {
-    onEmailChange(value)
-    if (touched) setEmailError(validateEmail(value))
+  const handleCpfChange = (value: string) => {
+    const nextCpf = formatCpf(value)
+    onCpfChange(nextCpf)
+    if (touched) setCpfError(validateCpf(nextCpf))
+  }
+
+  const handleMatriculaChange = (value: string) => {
+    const nextMatricula = onlyDigits(value).slice(0, 10)
+    onMatriculaChange(nextMatricula)
+    if (touched) setMatriculaError(validateMatricula(nextMatricula))
   }
 
   const handleParticipantTypeChange = (value: ParticipantType) => {
@@ -89,7 +123,7 @@ export function ParticipantStep({
           Pesquisa de Satisfação Acadêmica
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-lg text-slate-600">
-          Informe seu e-mail e selecione como você participará da avaliação.
+          Informe seu CPF, sua matrícula e selecione como você participará da avaliação.
         </p>
       </div>
 
@@ -101,32 +135,59 @@ export function ParticipantStep({
           <IconBadge tone="soft">ID</IconBadge>
           <p>
             As respostas são confidenciais e utilizadas exclusivamente para avaliação institucional e melhoria acadêmica.
-            A confirmação será enviada para o e-mail informado futuramente.
+            CPF e matrícula serão usados apenas para identificar a participação.
           </p>
         </div>
 
         <div className="grid gap-6">
           <label className="grid gap-2 text-sm font-bold text-slate-700">
-            E-mail
+            CPF
             <input
               className={cx(
                 'h-12 rounded-lg border bg-white px-4 text-base text-slate-950 outline-none transition focus:border-blue-700 focus:ring-4 focus:ring-blue-700/10',
-                emailError && touched ? 'border-red-400' : 'border-slate-300',
+                cpfError && touched ? 'border-red-400' : 'border-slate-300',
               )}
-              type="email"
-              placeholder="seuemail@exemplo.com"
-              value={email}
-              aria-invalid={Boolean(emailError && touched)}
-              aria-describedby={emailError && touched ? 'email-error' : undefined}
+              type="text"
+              inputMode="numeric"
+              placeholder="000.000.000-00"
+              value={cpf}
+              aria-invalid={Boolean(cpfError && touched)}
+              aria-describedby={cpfError && touched ? 'cpf-error' : undefined}
               onBlur={() => {
                 setTouched(true)
-                setEmailError(validateEmail(email))
+                setCpfError(validateCpf(cpf))
               }}
-              onChange={(event) => handleEmailChange(event.target.value)}
+              onChange={(event) => handleCpfChange(event.target.value)}
             />
-            {emailError && touched ? (
-              <small className="font-semibold text-red-600" id="email-error">
-                {emailError}
+            {cpfError && touched ? (
+              <small className="font-semibold text-red-600" id="cpf-error">
+                {cpfError}
+              </small>
+            ) : null}
+          </label>
+
+          <label className="grid gap-2 text-sm font-bold text-slate-700">
+            Matrícula
+            <input
+              className={cx(
+                'h-12 rounded-lg border bg-white px-4 text-base text-slate-950 outline-none transition focus:border-blue-700 focus:ring-4 focus:ring-blue-700/10',
+                matriculaError && touched ? 'border-red-400' : 'border-slate-300',
+              )}
+              type="text"
+              inputMode="numeric"
+              placeholder="Informe sua matrícula"
+              value={matricula}
+              aria-invalid={Boolean(matriculaError && touched)}
+              aria-describedby={matriculaError && touched ? 'matricula-error' : undefined}
+              onBlur={() => {
+                setTouched(true)
+                setMatriculaError(validateMatricula(matricula))
+              }}
+              onChange={(event) => handleMatriculaChange(event.target.value)}
+            />
+            {matriculaError && touched ? (
+              <small className="font-semibold text-red-600" id="matricula-error">
+                {matriculaError}
               </small>
             ) : null}
           </label>

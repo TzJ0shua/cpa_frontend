@@ -7,7 +7,8 @@ export function buildSurveyApiPayload(surveyData: SurveyData): SurveyApiPayload 
     confirmationCode: surveyData.confirmationCode,
     submittedAt: surveyData.submittedAt,
     respondent: {
-      email: surveyData.email,
+      cpf: surveyData.cpf.replace(/\D/g, ''),
+      matricula: surveyData.matricula.trim(),
       type: surveyData.participante,
     },
     course: {
