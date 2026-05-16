@@ -4,7 +4,6 @@ import type { SurveyApiPayload, SurveyData } from './survey-types'
 export function buildSurveyApiPayload(surveyData: SurveyData): SurveyApiPayload {
   return {
     schemaVersion: '2026-CPA-v1',
-    confirmationCode: surveyData.confirmationCode,
     submittedAt: surveyData.submittedAt,
     respondent: {
       cpf: surveyData.cpf.replace(/\D/g, ''),

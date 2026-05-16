@@ -44,7 +44,6 @@ export interface SurveyData {
     nomeCurso: string
   }
   materias: MateriaResposta[]
-  confirmationCode: string
   submittedAt: string
 }
 
@@ -65,7 +64,6 @@ export interface SurveyApiSubject {
 
 export interface SurveyApiPayload {
   schemaVersion: '2026-CPA-v1'
-  confirmationCode: string
   submittedAt: string
   respondent: {
     cpf: string

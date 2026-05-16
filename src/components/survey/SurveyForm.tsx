@@ -29,14 +29,6 @@ const stepMap: Record<Step, string> = {
   confirmation: 'Conclusão',
 }
 
-function generateConfirmationCode() {
-  const code = Math.floor(Math.random() * 1_000_000)
-    .toString()
-    .padStart(6, '0')
-
-  return `CPA-2026-${code}`
-}
-
 export function SurveyForm() {
   const [currentStep, setCurrentStep] = useState<Step>('participant')
   const [cpf, setCpf] = useState('')
@@ -52,7 +44,6 @@ export function SurveyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitResult, setSubmitResult] = useState<SubmitSurveyResult | null>(null)
-  const [confirmationCode, setConfirmationCode] = useState('')
 
   const selectedCourse = useMemo(
     () => cursos.find((curso) => curso.id === selectedCourseId) ?? null,
@@ -108,7 +99,7 @@ export function SurveyForm() {
     )
   }, [])
 
-  const buildSurveyData = useCallback((code: string): SurveyData | null => {
+  const buildSurveyData = useCallback((): SurveyData | null => {
     if (!selectedCourse || !participantType) return null
 
     const materias: MateriaResposta[] = selectedMaterias.map((materia) => ({
@@ -127,25 +118,22 @@ export function SurveyForm() {
         nomeCurso: selectedCourse.nome,
       },
       materias,
-      confirmationCode: code,
       submittedAt: new Date().toISOString(),
     }
   }, [cpf, matricula, participantType, respostasMap, selectedCourse, selectedMaterias])
 
   const handleSubmit = useCallback(async () => {
-    const nextConfirmationCode = generateConfirmationCode()
     setIsSubmitting(true)
     setSubmitError('')
     setSubmitResult(null)
 
-    const payload = buildSurveyData(nextConfirmationCode)
+    const payload = buildSurveyData()
     if (!payload) {
       setSubmitResult({
         ok: false,
         status: 0,
         message: 'Não foi possível montar os dados da pesquisa.',
       })
-      setConfirmationCode(nextConfirmationCode)
       setCurrentStep('confirmation')
       setIsSubmitting(false)
       return
@@ -154,7 +142,6 @@ export function SurveyForm() {
     try {
       const result = await submitSurvey(buildSurveyApiPayload(payload))
       setSubmitResult(result)
-      setConfirmationCode(nextConfirmationCode)
       setCurrentStep('confirmation')
     } catch (error) {
       setSubmitResult({
@@ -162,7 +149,6 @@ export function SurveyForm() {
         status: 0,
         message: error instanceof Error ? error.message : 'Não foi possível enviar a avaliação.',
       })
-      setConfirmationCode(nextConfirmationCode)
       setCurrentStep('confirmation')
     } finally {
       setIsSubmitting(false)
@@ -180,7 +166,6 @@ export function SurveyForm() {
     setRespostasMap({})
     setSubmitError('')
     setSubmitResult(null)
-    setConfirmationCode('')
   }, [])
 
   const stepNumber = stepLabels.findIndex((label) => label === stepMap[currentStep]) + 1
@@ -260,7 +245,6 @@ export function SurveyForm() {
           <ConfirmationStep
             cpf={cpf}
             matricula={matricula}
-            confirmationCode={confirmationCode}
             submitResult={submitResult}
             totalMaterias={selectedMaterias.length}
             onNewResponse={resetForm}

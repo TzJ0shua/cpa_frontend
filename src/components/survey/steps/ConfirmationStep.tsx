@@ -1,11 +1,11 @@
 import type { SubmitSurveyResult } from '../../../services/survey-api'
 import { Button } from '../ui/Button'
 import { IconBadge } from '../ui/IconBadge'
+import { QRCodeImage } from '../ui/QRCodeImage'
 
 interface ConfirmationStepProps {
   cpf: string
   matricula: string
-  confirmationCode: string
   submitResult: SubmitSurveyResult | null
   totalMaterias: number
   onNewResponse: () => void
@@ -14,13 +14,14 @@ interface ConfirmationStepProps {
 export function ConfirmationStep({
   cpf,
   matricula,
-  confirmationCode,
   submitResult,
   totalMaterias,
   onNewResponse,
 }: ConfirmationStepProps) {
   const wasSubmitted = submitResult?.ok === true
   const statusText = submitResult?.status ? `Status ${submitResult.status}` : 'Sem resposta HTTP'
+  const qrCodeValue = submitResult?.qrCodeValue
+  const validationCode = submitResult?.validationCode
 
   return (
     <section className="survey-enter w-full max-w-xl px-4">
@@ -64,9 +65,23 @@ export function ConfirmationStep({
 
         {wasSubmitted ? (
           <>
-            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">Código visual</span>
-              <p className="mt-2 font-mono text-2xl font-black text-slate-950">{confirmationCode}</p>
+            <div className="mb-4 grid justify-items-center gap-4 rounded-lg border border-blue-200 bg-blue-50 p-5 text-center">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">QR Code de confirmação</span>
+              {qrCodeValue ? (
+                <QRCodeImage value={qrCodeValue} />
+              ) : (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                  Código não retornado pelo backend.
+                </div>
+              )}
+              <p className="max-w-sm text-sm font-bold text-slate-700">
+                Tire um print desta tela para guardar seu comprovante de participação.
+              </p>
+              {validationCode ? (
+                <p className="max-w-sm break-all font-mono text-xs font-semibold text-slate-500">
+                  {validationCode}
+                </p>
+              ) : null}
             </div>
             <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">
               Participação identificada por CPF <strong className="text-slate-950">{cpf}</strong> e matrícula{' '}
