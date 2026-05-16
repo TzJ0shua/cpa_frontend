@@ -1,3 +1,4 @@
+import { escalaAvaliacao } from '../../../lib/survey-data'
 import { cx } from '../../../utils/classnames'
 
 interface RatingScaleProps {
@@ -11,25 +12,26 @@ export function RatingScale({ value, onChange, label }: RatingScaleProps) {
     <div className="grid gap-3">
       <p className="font-bold text-slate-800">{label}</p>
       <div className="grid grid-cols-5 gap-2">
-        {[1, 2, 3, 4, 5].map((rating) => (
+        {escalaAvaliacao.map(({ valor, rotulo }) => (
           <button
             className={cx(
-              'h-12 rounded-lg border-2 text-lg font-black transition hover:-translate-y-0.5 hover:border-blue-400',
-              value === rating
+              'min-h-14 rounded-lg border-2 px-2 py-2 text-sm font-black transition hover:-translate-y-0.5 hover:border-blue-400 sm:text-base',
+              value === valor
                 ? 'border-blue-700 bg-blue-700 text-white shadow-md shadow-blue-900/20'
                 : 'border-transparent bg-slate-100 text-slate-500',
             )}
-            key={rating}
-            onClick={() => onChange(rating)}
+            key={valor}
+            onClick={() => onChange(valor)}
+            aria-label={`${valor} - ${rotulo}`}
             type="button"
           >
-            {rating}
+            {valor}
           </button>
         ))}
       </div>
       <div className="flex justify-between text-xs font-medium text-slate-500">
-        <span>Muito insatisfeito</span>
-        <span>Muito satisfeito</span>
+        <span>Discordo totalmente</span>
+        <span>Concordo totalmente</span>
       </div>
     </div>
   )

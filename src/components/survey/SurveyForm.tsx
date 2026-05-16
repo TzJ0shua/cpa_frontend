@@ -6,34 +6,46 @@ import {
 import type {
   Curso,
   MateriaResposta,
+  ParticipantType,
   Respostas,
   Step,
   SurveyData,
 } from '../../lib/survey-types'
+import { submitSurvey } from '../../services/survey-api'
 import { ConfirmationStep } from './steps/ConfirmationStep'
 import { CourseStep } from './steps/CourseStep'
-import { EmailStep } from './steps/EmailStep'
+import { ParticipantStep } from './steps/ParticipantStep'
 import { QuestionnaireStep } from './steps/QuestionnaireStep'
 import { SubjectStep } from './steps/SubjectStep'
 import { SurveyProgress } from './SurveyProgress'
 import { stepLabels } from './survey-steps'
 
 const stepMap: Record<Step, string> = {
-  email: 'E-mail',
+  participant: 'Identificação',
   course: 'Curso',
-  subjects: 'Matérias',
+  subjects: 'Disciplinas',
   questionnaire: 'Avaliação',
   confirmation: 'Conclusão',
 }
 
+function generateConfirmationCode() {
+  const code = Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, '0')
+
+  return `CPA-2026-${code}`
+}
+
 export function SurveyForm() {
-  const [currentStep, setCurrentStep] = useState<Step>('email')
+  const [currentStep, setCurrentStep] = useState<Step>('participant')
   const [email, setEmail] = useState('')
+  const [participantType, setParticipantType] = useState<ParticipantType | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([])
   const [currentQuestionnaireIndex, setCurrentQuestionnaireIndex] = useState(0)
   const [respostasMap, setRespostasMap] = useState<Record<string, Respostas>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [confirmationCode, setConfirmationCode] = useState('')
 
   const selectedCourse = useMemo(
     () => cursos.find((curso) => curso.id === selectedCourseId) ?? null,
@@ -62,40 +74,48 @@ export function SurveyForm() {
     )
   }, [])
 
-  const buildSurveyData = useCallback((): SurveyData | null => {
-    if (!selectedCourse) return null
+  const buildSurveyData = useCallback((code: string): SurveyData | null => {
+    if (!selectedCourse || !participantType) return null
 
     const materias: MateriaResposta[] = selectedMaterias.map((materia) => ({
       idMateria: materia.id,
       nomeMateria: materia.nome,
+      docente: materia.docente,
       respostas: respostasMap[materia.id] ?? defaultRespostas,
     }))
 
     return {
       email,
+      participante: participantType,
       curso: {
         idCurso: selectedCourse.id,
         nomeCurso: selectedCourse.nome,
       },
       materias,
+      confirmationCode: code,
+      submittedAt: new Date().toISOString(),
     }
-  }, [email, respostasMap, selectedCourse, selectedMaterias])
+  }, [email, participantType, respostasMap, selectedCourse, selectedMaterias])
 
   const handleSubmit = useCallback(async () => {
+    const nextConfirmationCode = generateConfirmationCode()
     setIsSubmitting(true)
-    console.log('Survey data submitted:', JSON.stringify(buildSurveyData(), null, 2))
-    await new Promise((resolve) => window.setTimeout(resolve, 800))
+    const payload = buildSurveyData(nextConfirmationCode)
+    if (payload) await submitSurvey(payload)
+    setConfirmationCode(nextConfirmationCode)
     setIsSubmitting(false)
     setCurrentStep('confirmation')
   }, [buildSurveyData])
 
   const resetForm = useCallback(() => {
-    setCurrentStep('email')
+    setCurrentStep('participant')
     setEmail('')
+    setParticipantType(null)
     setSelectedCourseId(null)
     setSelectedSubjectIds([])
     setCurrentQuestionnaireIndex(0)
     setRespostasMap({})
+    setConfirmationCode('')
   }, [])
 
   const stepNumber = stepLabels.findIndex((label) => label === stepMap[currentStep]) + 1
@@ -105,8 +125,14 @@ export function SurveyForm() {
       {currentStep !== 'confirmation' ? <SurveyProgress currentStep={stepNumber} /> : null}
 
       <main className="grid flex-1 place-items-center px-0 py-8">
-        {currentStep === 'email' ? (
-          <EmailStep email={email} onEmailChange={setEmail} onNext={() => setCurrentStep('course')} />
+        {currentStep === 'participant' ? (
+          <ParticipantStep
+            email={email}
+            participantType={participantType}
+            onEmailChange={setEmail}
+            onParticipantTypeChange={setParticipantType}
+            onNext={() => setCurrentStep('course')}
+          />
         ) : null}
 
         {currentStep === 'course' ? (
@@ -114,7 +140,7 @@ export function SurveyForm() {
             selectedCourseId={selectedCourseId}
             onCourseSelect={handleCourseSelect}
             onNext={() => setCurrentStep('subjects')}
-            onBack={() => setCurrentStep('email')}
+            onBack={() => setCurrentStep('participant')}
           />
         ) : null}
 
@@ -159,6 +185,7 @@ export function SurveyForm() {
         {currentStep === 'confirmation' ? (
           <ConfirmationStep
             email={email}
+            confirmationCode={confirmationCode}
             totalMaterias={selectedMaterias.length}
             onNewResponse={resetForm}
           />

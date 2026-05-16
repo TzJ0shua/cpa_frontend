@@ -1,1 +1,1 @@
-export const stepLabels = ['E-mail', 'Curso', 'Matérias', 'Avaliação', 'Conclusão']
+export const stepLabels = ['Identificação', 'Curso', 'Disciplinas', 'Avaliação', 'Conclusão']

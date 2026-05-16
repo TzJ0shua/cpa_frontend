@@ -22,7 +22,7 @@ export function CourseStep({
     <section className="survey-enter w-full max-w-2xl px-4">
       <StepTitle
         title="Selecione seu Curso"
-        subtitle="Escolha o curso ao qual você pertence para visualizar as matérias disponíveis."
+        subtitle="Escolha o curso ao qual você pertence para visualizar as disciplinas disponíveis."
       />
       <div className="mb-7 grid gap-3">
         {cursos.map((curso) => (
@@ -31,7 +31,7 @@ export function CourseStep({
             key={curso.id}
             selected={selectedCourseId === curso.id}
             title={curso.nome}
-            subtitle={`${curso.materias.length} ${curso.materias.length === 1 ? 'matéria' : 'matérias'} disponíveis`}
+            subtitle={`${curso.materias.length} ${curso.materias.length === 1 ? 'disciplina' : 'disciplinas'} disponíveis`}
             onClick={() => onCourseSelect(curso.id)}
           />
         ))}

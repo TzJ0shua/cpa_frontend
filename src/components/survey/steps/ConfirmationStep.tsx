@@ -3,12 +3,14 @@ import { IconBadge } from '../ui/IconBadge'
 
 interface ConfirmationStepProps {
   email: string
+  confirmationCode: string
   totalMaterias: number
   onNewResponse: () => void
 }
 
 export function ConfirmationStep({
   email,
+  confirmationCode,
   totalMaterias,
   onNewResponse,
 }: ConfirmationStepProps) {
@@ -28,12 +30,16 @@ export function ConfirmationStep({
           <p>
             <strong className="text-slate-950">Código de Confirmação</strong>
             <br />
-            Um código de confirmação será enviado para <strong className="text-slate-950">{email}</strong>.
+            A confirmação será enviada para <strong className="text-slate-950">{email}</strong> futuramente.
           </p>
+        </div>
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">Código visual</span>
+          <p className="mt-2 font-mono text-2xl font-black text-slate-950">{confirmationCode}</p>
         </div>
         <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">
           Você respondeu pesquisas para <strong className="font-black text-blue-700">{totalMaterias}</strong>{' '}
-          {totalMaterias === 1 ? 'matéria' : 'matérias'}.
+          {totalMaterias === 1 ? 'disciplina' : 'disciplinas'}.
         </p>
       </div>
 
