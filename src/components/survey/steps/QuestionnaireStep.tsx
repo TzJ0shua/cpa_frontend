@@ -3,6 +3,7 @@ import type { Materia, Respostas } from '../../../lib/survey-types'
 import { Actions } from '../ui/Actions'
 import { Button } from '../ui/Button'
 import { IconBadge } from '../ui/IconBadge'
+import { LoadingState } from '../ui/LoadingState'
 import { RatingScale } from '../ui/RatingScale'
 
 interface QuestionnaireStepProps {
@@ -91,13 +92,18 @@ export function QuestionnaireStep({
       </div>
 
       <Actions>
-        <Button variant="secondary" onClick={onPrevious}>
+        <Button disabled={isSubmitting} variant="secondary" onClick={onPrevious}>
           {currentIndex === 0 ? 'Voltar' : 'Disciplina Anterior'}
         </Button>
         <Button disabled={!allFieldsAnswered || isSubmitting} onClick={onNext}>
           {isSubmitting ? 'Enviando...' : isLast ? 'Finalizar Pesquisa' : 'Próxima Disciplina'}
         </Button>
       </Actions>
+      {isSubmitting ? (
+        <div className="mt-4">
+          <LoadingState message="Conectando ao backend e enviando suas respostas..." />
+        </div>
+      ) : null}
       {!allFieldsAnswered ? (
         <p className="mt-4 text-center text-sm font-medium text-slate-500">Responda todas as afirmações e preencha os comentários para continuar</p>
       ) : null}

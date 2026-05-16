@@ -1,4 +1,5 @@
 import type { SurveyApiPayload } from '../lib/survey-types'
+import { fetchWithRetry } from '../utils/fetch-with-retry'
 
 const SURVEY_API_ENDPOINT =
   import.meta.env.VITE_SURVEY_API_ENDPOINT ?? 'http://localhost:8080/formulario'
@@ -30,11 +31,21 @@ async function readJsonOrText(response: Response) {
 }
 
 export async function submitSurvey(payload: SurveyApiPayload): Promise<SubmitSurveyResult> {
-  const response = await fetch(SURVEY_API_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
+  let response: Response
+
+  try {
+    response = await fetchWithRetry(SURVEY_API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      message: 'Não foi possível conectar ao backend após 3 tentativas.',
+    }
+  }
 
   const responseBody = await readJsonOrText(response)
   const responseMessage = responseBody?.error ?? responseBody?.message

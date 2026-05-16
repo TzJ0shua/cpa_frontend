@@ -13,6 +13,7 @@ import type {
 import { buildSurveyApiPayload } from '../../lib/survey-payload'
 import { fetchFormCourses } from '../../services/form-data-api'
 import { submitSurvey, type SubmitSurveyResult } from '../../services/survey-api'
+import { scrollToTop } from '../../utils/scroll-to-top'
 import { ConfirmationStep } from './steps/ConfirmationStep'
 import { CourseStep } from './steps/CourseStep'
 import { ParticipantStep } from './steps/ParticipantStep'
@@ -56,6 +57,11 @@ export function SurveyForm() {
   )
 
   const currentMateria = selectedMaterias[currentQuestionnaireIndex] ?? null
+
+  const goToStep = useCallback((step: Step) => {
+    setCurrentStep(step)
+    scrollToTop()
+  }, [])
 
   const loadFormData = useCallback(async () => {
     setIsLoadingFormData(true)
@@ -134,7 +140,7 @@ export function SurveyForm() {
         status: 0,
         message: 'Não foi possível montar os dados da pesquisa.',
       })
-      setCurrentStep('confirmation')
+      goToStep('confirmation')
       setIsSubmitting(false)
       return
     }
@@ -142,21 +148,21 @@ export function SurveyForm() {
     try {
       const result = await submitSurvey(buildSurveyApiPayload(payload))
       setSubmitResult(result)
-      setCurrentStep('confirmation')
+      goToStep('confirmation')
     } catch (error) {
       setSubmitResult({
         ok: false,
         status: 0,
         message: error instanceof Error ? error.message : 'Não foi possível enviar a avaliação.',
       })
-      setCurrentStep('confirmation')
+      goToStep('confirmation')
     } finally {
       setIsSubmitting(false)
     }
-  }, [buildSurveyData])
+  }, [buildSurveyData, goToStep])
 
   const resetForm = useCallback(() => {
-    setCurrentStep('participant')
+    goToStep('participant')
     setCpf('')
     setMatricula('')
     setParticipantType(null)
@@ -166,7 +172,7 @@ export function SurveyForm() {
     setRespostasMap({})
     setSubmitError('')
     setSubmitResult(null)
-  }, [])
+  }, [goToStep])
 
   const stepNumber = stepLabels.findIndex((label) => label === stepMap[currentStep]) + 1
 
@@ -183,7 +189,7 @@ export function SurveyForm() {
             onCpfChange={setCpf}
             onMatriculaChange={setMatricula}
             onParticipantTypeChange={setParticipantType}
-            onNext={() => setCurrentStep('course')}
+            onNext={() => goToStep('course')}
           />
         ) : null}
 
@@ -195,8 +201,8 @@ export function SurveyForm() {
             isLoading={isLoadingFormData}
             error={formDataError}
             onRetry={() => void loadFormData()}
-            onNext={() => setCurrentStep('subjects')}
-            onBack={() => setCurrentStep('participant')}
+            onNext={() => goToStep('subjects')}
+            onBack={() => goToStep('participant')}
           />
         ) : null}
 
@@ -207,9 +213,9 @@ export function SurveyForm() {
             onSubjectToggle={handleSubjectToggle}
             onNext={() => {
               setCurrentQuestionnaireIndex(0)
-              setCurrentStep('questionnaire')
+              goToStep('questionnaire')
             }}
-            onBack={() => setCurrentStep('course')}
+            onBack={() => goToStep('course')}
           />
         ) : null}
 
@@ -225,12 +231,17 @@ export function SurveyForm() {
             currentIndex={currentQuestionnaireIndex}
             totalMaterias={selectedMaterias.length}
             onPrevious={() => {
-              if (currentQuestionnaireIndex === 0) setCurrentStep('subjects')
-              else setCurrentQuestionnaireIndex((previous) => previous - 1)
+              if (currentQuestionnaireIndex === 0) {
+                goToStep('subjects')
+              } else {
+                setCurrentQuestionnaireIndex((previous) => previous - 1)
+                scrollToTop()
+              }
             }}
             onNext={() => {
               if (currentQuestionnaireIndex < selectedMaterias.length - 1) {
                 setCurrentQuestionnaireIndex((previous) => previous + 1)
+                scrollToTop()
               } else {
                 void handleSubmit()
               }

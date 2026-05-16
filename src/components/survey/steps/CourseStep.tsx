@@ -1,6 +1,7 @@
 import type { Curso } from '../../../lib/survey-types'
 import { Actions } from '../ui/Actions'
 import { Button } from '../ui/Button'
+import { LoadingState } from '../ui/LoadingState'
 import { OptionButton } from '../ui/OptionButton'
 import { StepTitle } from '../ui/StepTitle'
 
@@ -33,8 +34,8 @@ export function CourseStep({
       />
 
       {isLoading ? (
-        <div className="mb-7 rounded-lg border border-slate-200 bg-white/80 p-6 text-center text-sm font-bold text-slate-600">
-          Carregando cursos e disciplinas...
+        <div className="mb-7">
+          <LoadingState message="Conectando ao backend para carregar cursos e disciplinas..." />
         </div>
       ) : null}
 

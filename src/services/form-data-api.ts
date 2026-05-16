@@ -1,4 +1,5 @@
 import type { Curso } from '../lib/survey-types'
+import { fetchWithRetry } from '../utils/fetch-with-retry'
 
 const FORM_DATA_API_ENDPOINT =
   import.meta.env.VITE_FORM_DATA_API_ENDPOINT ?? 'http://localhost:8080/dados-formulario'
@@ -49,7 +50,13 @@ function mapApiCourse(apiCourse: ApiCurso): Curso {
 }
 
 export async function fetchFormCourses(): Promise<Curso[]> {
-  const response = await fetch(FORM_DATA_API_ENDPOINT)
+  let response: Response
+
+  try {
+    response = await fetchWithRetry(FORM_DATA_API_ENDPOINT)
+  } catch {
+    throw new Error('Não foi possível conectar ao backend após 3 tentativas.')
+  }
 
   if (!response.ok) {
     const responseMessage = await readResponseMessage(response)
