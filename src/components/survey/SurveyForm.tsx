@@ -35,6 +35,7 @@ export function SurveyForm() {
   const [cpf, setCpf] = useState('')
   const [matricula, setMatricula] = useState('')
   const [participantType, setParticipantType] = useState<ParticipantType | null>(null)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [cursos, setCursos] = useState<Curso[]>([])
   const [isLoadingFormData, setIsLoadingFormData] = useState(false)
   const [formDataError, setFormDataError] = useState('')
@@ -171,6 +172,7 @@ export function SurveyForm() {
     setCpf('')
     setMatricula('')
     setParticipantType(null)
+    setAcceptedTerms(false)
     setSelectedCourseId(null)
     setSelectedSubjectIds([])
     setCurrentQuestionnaireIndex(0)
@@ -191,9 +193,11 @@ export function SurveyForm() {
             cpf={cpf}
             matricula={matricula}
             participantType={participantType}
+            acceptedTerms={acceptedTerms}
             onCpfChange={setCpf}
             onMatriculaChange={setMatricula}
             onParticipantTypeChange={setParticipantType}
+            onAcceptedTermsChange={setAcceptedTerms}
             onNext={() => goToStep('course')}
           />
         ) : null}

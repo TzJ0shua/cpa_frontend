@@ -8,9 +8,11 @@ interface ParticipantStepProps {
   cpf: string
   matricula: string
   participantType: ParticipantType | null
+  acceptedTerms: boolean
   onCpfChange: (cpf: string) => void
   onMatriculaChange: (matricula: string) => void
   onParticipantTypeChange: (participantType: ParticipantType) => void
+  onAcceptedTermsChange: (acceptedTerms: boolean) => void
   onNext: () => void
 }
 
@@ -34,7 +36,7 @@ const participantOptions: Array<{
 function AnonymityBadge() {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
-      <span aria-hidden="true">OK</span>
+      <span aria-hidden="true"></span>
       Pesquisa confidencial
     </div>
   )
@@ -56,14 +58,17 @@ export function ParticipantStep({
   cpf,
   matricula,
   participantType,
+  acceptedTerms,
   onCpfChange,
   onMatriculaChange,
   onParticipantTypeChange,
+  onAcceptedTermsChange,
   onNext,
 }: ParticipantStepProps) {
   const [cpfError, setCpfError] = useState('')
   const [matriculaError, setMatriculaError] = useState('')
   const [participantError, setParticipantError] = useState('')
+  const [termsError, setTermsError] = useState('')
   const [touched, setTouched] = useState(false)
 
   const validateCpf = (value: string) => {
@@ -84,13 +89,15 @@ export function ParticipantStep({
     const nextCpfError = validateCpf(cpf)
     const nextMatriculaError = validateMatricula(matricula)
     const nextParticipantError = participantType ? '' : 'Selecione o tipo de participante'
+    const nextTermsError = acceptedTerms ? '' : 'Aceite os termos e a política de privacidade para continuar'
 
     setCpfError(nextCpfError)
     setMatriculaError(nextMatriculaError)
     setParticipantError(nextParticipantError)
+    setTermsError(nextTermsError)
     setTouched(true)
 
-    return !nextCpfError && !nextMatriculaError && !nextParticipantError
+    return !nextCpfError && !nextMatriculaError && !nextParticipantError && !nextTermsError
   }
 
   const handleSubmit = (event: FormEvent) => {
@@ -113,6 +120,11 @@ export function ParticipantStep({
   const handleParticipantTypeChange = (value: ParticipantType) => {
     onParticipantTypeChange(value)
     if (touched) setParticipantError('')
+  }
+
+  const handleAcceptedTermsChange = (value: boolean) => {
+    onAcceptedTermsChange(value)
+    if (touched) setTermsError(value ? '' : 'Aceite os termos e a política de privacidade para continuar')
   }
 
   return (
@@ -234,6 +246,33 @@ export function ParticipantStep({
               <small className="font-semibold text-red-600">{participantError}</small>
             ) : null}
           </fieldset>
+        </div>
+
+        <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <label className="flex items-start gap-3 text-sm font-medium leading-6 text-slate-600">
+            <input
+              className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-blue-700 accent-blue-700"
+              type="checkbox"
+              checked={acceptedTerms}
+              aria-invalid={Boolean(termsError && touched)}
+              aria-describedby={termsError && touched ? 'terms-error' : undefined}
+              onChange={(event) => handleAcceptedTermsChange(event.target.checked)}
+            />
+            <span>
+              Li e aceito os termos de uso e a política de privacidade do CPA-FEMASS.
+            </span>
+          </label>
+          <a
+            className="mt-3 inline-flex min-h-10 items-center rounded-lg border border-blue-200 bg-white px-4 text-sm font-black text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
+            href="/termos-e-politicas"
+          >
+            Ler termos e políticas
+          </a>
+          {termsError && touched ? (
+            <small className="mt-3 block font-semibold text-red-600" id="terms-error">
+              {termsError}
+            </small>
+          ) : null}
         </div>
 
         <Button className="mt-6 w-full" type="submit">Continuar</Button>
