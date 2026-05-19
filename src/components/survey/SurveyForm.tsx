@@ -60,8 +60,13 @@ export function SurveyForm() {
 
   const goToStep = useCallback((step: Step) => {
     setCurrentStep(step)
-    scrollToTop()
   }, [])
+
+  useEffect(() => {
+    const animationFrame = window.requestAnimationFrame(() => scrollToTop())
+
+    return () => window.cancelAnimationFrame(animationFrame)
+  }, [currentStep, currentQuestionnaireIndex])
 
   const loadFormData = useCallback(async () => {
     setIsLoadingFormData(true)
@@ -235,13 +240,11 @@ export function SurveyForm() {
                 goToStep('subjects')
               } else {
                 setCurrentQuestionnaireIndex((previous) => previous - 1)
-                scrollToTop()
               }
             }}
             onNext={() => {
               if (currentQuestionnaireIndex < selectedMaterias.length - 1) {
                 setCurrentQuestionnaireIndex((previous) => previous + 1)
-                scrollToTop()
               } else {
                 void handleSubmit()
               }
