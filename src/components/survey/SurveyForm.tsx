@@ -117,8 +117,15 @@ export function SurveyForm() {
     )
   }, [])
 
+  const canContinueFromParticipant = Boolean(
+    participantType &&
+    acceptedTerms &&
+    cpf.replace(/\D/g, '').length === 11 &&
+    matricula.replace(/\D/g, '').length === 10,
+  )
+
   const buildSurveyData = useCallback((): SurveyData | null => {
-    if (!selectedCourse || !participantType) return null
+    if (!selectedCourse || !participantType || !acceptedTerms) return null
 
     const materias: MateriaResposta[] = selectedMaterias.map((materia) => ({
       idMateria: materia.id,
@@ -131,6 +138,7 @@ export function SurveyForm() {
       cpf,
       matricula,
       participante: participantType,
+      aceiteTermosCondicoesServico: acceptedTerms,
       curso: {
         idCurso: selectedCourse.id,
         nomeCurso: selectedCourse.nome,
@@ -139,7 +147,7 @@ export function SurveyForm() {
       materias,
       submittedAt: new Date().toISOString(),
     }
-  }, [cpf, matricula, participantType, perguntas, respostasMap, selectedCourse, selectedMaterias])
+  }, [acceptedTerms, cpf, matricula, participantType, perguntas, respostasMap, selectedCourse, selectedMaterias])
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true)
@@ -205,7 +213,9 @@ export function SurveyForm() {
             onMatriculaChange={setMatricula}
             onParticipantTypeChange={setParticipantType}
             onAcceptedTermsChange={setAcceptedTerms}
-            onNext={() => goToStep('course')}
+            onNext={() => {
+              if (canContinueFromParticipant) goToStep('course')
+            }}
           />
         ) : null}
 

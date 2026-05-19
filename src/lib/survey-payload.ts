@@ -9,6 +9,7 @@ export function buildSurveyApiPayload(surveyData: SurveyData): SurveyApiPayload 
       cpf: surveyData.cpf.replace(/\D/g, ''),
       matricula: surveyData.matricula.trim(),
       type: surveyData.participante,
+      aceiteTermosCondicoesServico: surveyData.aceiteTermosCondicoesServico,
     },
     course: {
       id: surveyData.curso.idCurso,

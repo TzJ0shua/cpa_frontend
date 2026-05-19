@@ -127,6 +127,12 @@ export function ParticipantStep({
     if (touched) setTermsError(value ? '' : 'Aceite os termos e a política de privacidade para continuar')
   }
 
+  const isFormReady =
+    !validateCpf(cpf) &&
+    !validateMatricula(matricula) &&
+    Boolean(participantType) &&
+    acceptedTerms
+
   return (
     <section className="survey-enter w-full max-w-2xl px-4">
       <div className="mb-8 text-center">
@@ -275,7 +281,7 @@ export function ParticipantStep({
           ) : null}
         </div>
 
-        <Button className="mt-6 w-full" type="submit">Continuar</Button>
+        <Button className="mt-6 w-full" disabled={!isFormReady} type="submit">Continuar</Button>
       </form>
     </section>
   )

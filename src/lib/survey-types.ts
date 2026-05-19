@@ -35,6 +35,7 @@ export interface SurveyData {
   cpf: string
   matricula: string
   participante: ParticipantType
+  aceiteTermosCondicoesServico: boolean
   curso: {
     idCurso: string
     nomeCurso: string
@@ -66,6 +67,7 @@ export interface SurveyApiPayload {
     cpf: string
     matricula: string
     type: ParticipantType
+    aceiteTermosCondicoesServico: boolean
   }
   course: {
     id: string
