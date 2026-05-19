@@ -1,8 +1,10 @@
 import type { SurveyApiPayload } from '../lib/survey-types'
+import { buildApiEndpoint } from '../config/api'
 import { fetchWithRetry } from '../utils/fetch-with-retry'
 
 const SURVEY_API_ENDPOINT =
-  import.meta.env.VITE_SURVEY_API_ENDPOINT ?? 'http://localhost:8080/formulario'
+  import.meta.env.VITE_SURVEY_API_ENDPOINT ??
+  buildApiEndpoint('/formulario', 'http://localhost:8080/formulario')
 
 interface ApiSubmitResponse {
   error?: string
