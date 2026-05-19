@@ -2,9 +2,7 @@ import type { Curso } from '../lib/survey-types'
 import { buildApiEndpoint } from '../config/api'
 import { fetchWithRetry } from '../utils/fetch-with-retry'
 
-const FORM_DATA_API_ENDPOINT =
-  import.meta.env.VITE_FORM_DATA_API_ENDPOINT ??
-  buildApiEndpoint('/dados-formulario', 'http://localhost:8080/dados-formulario')
+const FORM_DATA_API_ENDPOINT = buildApiEndpoint('/dados-formulario')
 
 interface ApiDisciplina {
   id: number

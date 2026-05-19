@@ -2,9 +2,7 @@ import type { Pergunta } from '../lib/survey-types'
 import { buildApiEndpoint } from '../config/api'
 import { fetchWithRetry } from '../utils/fetch-with-retry'
 
-const QUESTION_API_ENDPOINT =
-  import.meta.env.VITE_QUESTION_API_ENDPOINT ??
-  buildApiEndpoint('/perguntas', 'http://localhost:8080/perguntas')
+const QUESTION_API_ENDPOINT = buildApiEndpoint('/perguntas')
 
 interface ApiQuestion {
   id: string
