@@ -1,4 +1,4 @@
-import { escalaAvaliacao, perguntas } from './survey-data'
+import { escalaAvaliacao } from './survey-data'
 import type { SurveyApiPayload, SurveyData } from './survey-types'
 
 export function buildSurveyApiPayload(surveyData: SurveyData): SurveyApiPayload {
@@ -18,8 +18,8 @@ export function buildSurveyApiPayload(surveyData: SurveyData): SurveyApiPayload 
       subjectId: materia.idMateria,
       subjectName: materia.nomeMateria,
       teacherName: materia.docente,
-      answers: perguntas.map((pergunta) => {
-        const score = materia.respostas[pergunta.id]
+      answers: surveyData.perguntas.map((pergunta) => {
+        const score = materia.respostas.notas[pergunta.id]
         const scoreLabel =
           escalaAvaliacao.find((item) => item.valor === score)?.rotulo ?? ''
 

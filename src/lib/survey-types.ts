@@ -1,16 +1,11 @@
 export type ParticipantType = 'estudante' | 'docente'
 
-export type QuestionId =
-  | 'q1'
-  | 'q2'
-  | 'q3'
-  | 'q4'
-  | 'q5'
-  | 'q6'
-  | 'q7'
-  | 'q8'
-  | 'q9'
-  | 'q10'
+export type QuestionId = string
+
+export interface Pergunta {
+  id: QuestionId
+  texto: string
+}
 
 export interface Materia {
   id: string
@@ -24,7 +19,8 @@ export interface Curso {
   materias: Materia[]
 }
 
-export type Respostas = Record<QuestionId, number> & {
+export interface Respostas {
+  notas: Record<QuestionId, number>
   comentario: string
 }
 
@@ -43,6 +39,7 @@ export interface SurveyData {
     idCurso: string
     nomeCurso: string
   }
+  perguntas: Pergunta[]
   materias: MateriaResposta[]
   submittedAt: string
 }

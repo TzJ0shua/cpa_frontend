@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  defaultRespostas,
-} from '../../lib/survey-data'
+import { buildDefaultRespostas } from '../../lib/survey-data'
 import type {
   Curso,
   MateriaResposta,
   ParticipantType,
+  Pergunta,
   Respostas,
   Step,
   SurveyData,
 } from '../../lib/survey-types'
 import { buildSurveyApiPayload } from '../../lib/survey-payload'
 import { fetchFormCourses } from '../../services/form-data-api'
+import { fetchQuestions } from '../../services/question-api'
 import { submitSurvey, type SubmitSurveyResult } from '../../services/survey-api'
 import { scrollToTop } from '../../utils/scroll-to-top'
 import { ConfirmationStep } from './steps/ConfirmationStep'
@@ -37,6 +37,7 @@ export function SurveyForm() {
   const [participantType, setParticipantType] = useState<ParticipantType | null>(null)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [cursos, setCursos] = useState<Curso[]>([])
+  const [perguntas, setPerguntas] = useState<Pergunta[]>([])
   const [isLoadingFormData, setIsLoadingFormData] = useState(false)
   const [formDataError, setFormDataError] = useState('')
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
@@ -74,16 +75,21 @@ export function SurveyForm() {
     setFormDataError('')
 
     try {
-      const nextCursos = await fetchFormCourses()
+      const [nextCursos, nextPerguntas] = await Promise.all([
+        fetchFormCourses(),
+        fetchQuestions(),
+      ])
       setCursos(nextCursos)
+      setPerguntas(nextPerguntas)
       setSelectedCourseId((currentCourseId) =>
         nextCursos.some((curso) => curso.id === currentCourseId) ? currentCourseId : null,
       )
     } catch (error) {
       setCursos([])
+      setPerguntas([])
       setSelectedCourseId(null)
       setSelectedSubjectIds([])
-      setFormDataError(error instanceof Error ? error.message : 'Não foi possível carregar cursos e disciplinas.')
+      setFormDataError(error instanceof Error ? error.message : 'Não foi possível carregar os dados do formulário.')
     } finally {
       setIsLoadingFormData(false)
     }
@@ -118,7 +124,7 @@ export function SurveyForm() {
       idMateria: materia.id,
       nomeMateria: materia.nome,
       docente: materia.docente,
-      respostas: respostasMap[materia.id] ?? defaultRespostas,
+      respostas: respostasMap[materia.id] ?? buildDefaultRespostas(perguntas),
     }))
 
     return {
@@ -129,10 +135,11 @@ export function SurveyForm() {
         idCurso: selectedCourse.id,
         nomeCurso: selectedCourse.nome,
       },
+      perguntas,
       materias,
       submittedAt: new Date().toISOString(),
     }
-  }, [cpf, matricula, participantType, respostasMap, selectedCourse, selectedMaterias])
+  }, [cpf, matricula, participantType, perguntas, respostasMap, selectedCourse, selectedMaterias])
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true)
@@ -231,7 +238,8 @@ export function SurveyForm() {
         {currentStep === 'questionnaire' && currentMateria ? (
           <QuestionnaireStep
             materia={currentMateria}
-            respostas={respostasMap[currentMateria.id] ?? defaultRespostas}
+            perguntas={perguntas}
+            respostas={respostasMap[currentMateria.id] ?? buildDefaultRespostas(perguntas)}
             onRespostasChange={(respostas) => {
               setSubmitError('')
               setSubmitResult(null)

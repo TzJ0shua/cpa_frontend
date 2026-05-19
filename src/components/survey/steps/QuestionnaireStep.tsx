@@ -1,5 +1,5 @@
-import { escalaAvaliacao, perguntas, textoIntrodutorioAvaliacao } from '../../../lib/survey-data'
-import type { Materia, Respostas } from '../../../lib/survey-types'
+import { escalaAvaliacao, textoIntrodutorioAvaliacao } from '../../../lib/survey-data'
+import type { Materia, Pergunta, QuestionId, Respostas } from '../../../lib/survey-types'
 import { Actions } from '../ui/Actions'
 import { Button } from '../ui/Button'
 import { IconBadge } from '../ui/IconBadge'
@@ -8,6 +8,7 @@ import { RatingScale } from '../ui/RatingScale'
 
 interface QuestionnaireStepProps {
   materia: Materia
+  perguntas: Pergunta[]
   respostas: Respostas
   onRespostasChange: (respostas: Respostas) => void
   currentIndex: number
@@ -21,6 +22,7 @@ interface QuestionnaireStepProps {
 
 export function QuestionnaireStep({
   materia,
+  perguntas,
   respostas,
   onRespostasChange,
   currentIndex,
@@ -32,11 +34,17 @@ export function QuestionnaireStep({
   submitError,
 }: QuestionnaireStepProps) {
   const allFieldsAnswered =
-    perguntas.every((pergunta) => respostas[pergunta.id] > 0) &&
+    perguntas.every((pergunta) => respostas.notas[pergunta.id] > 0) &&
     respostas.comentario.trim().length > 0
 
-  const handleRatingChange = (key: keyof Respostas, value: number) => {
-    onRespostasChange({ ...respostas, [key]: value })
+  const handleRatingChange = (key: QuestionId, value: number) => {
+    onRespostasChange({
+      ...respostas,
+      notas: {
+        ...respostas.notas,
+        [key]: value,
+      },
+    })
   }
 
   return (
@@ -73,7 +81,7 @@ export function QuestionnaireStep({
           <RatingScale
             key={pergunta.id}
             label={pergunta.texto}
-            value={respostas[pergunta.id]}
+            value={respostas.notas[pergunta.id] ?? 0}
             onChange={(value) => handleRatingChange(pergunta.id, value)}
           />
         ))}
